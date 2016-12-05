@@ -20,7 +20,7 @@ namespace day5
 			var watch = Stopwatch.StartNew();
 			using (MD5 md5Hash = MD5.Create())
 			{
-				while (result.Length != 8 || resultPart2.Contains('-'))
+				while (true)
 				{
 					while (true)
 					{
@@ -33,7 +33,9 @@ namespace day5
 							Console.WriteLine(index);
 						}
 						byte[] data = md5Hash.ComputeHash(Encoding.UTF8.GetBytes(input + index++));
-						if (string.Join("", data.Take(3).Select(b => b.ToString("x2"))).Substring(0,5) == "00000")
+						var x = BitConverter.ToInt32(data, 0);
+						//first two check as is, last one check only high nibble
+						if ((data[0] == 0) && (data[1] ==0)  && (data[2] >> 4 == 0))
 						{
 							var char6 = data[2].ToString("x2")[1];
 							if (result.Length < 8)
@@ -59,7 +61,10 @@ namespace day5
 							break;
 						}
 					}
-
+				if (!resultPart2.Contains('-'))
+				{
+					break;
+				}
 				}
 			}
 			Console.WriteLine($"Found!");
