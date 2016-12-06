@@ -10,7 +10,14 @@ namespace day5
 {
 	class Program
 	{
-		const string input = "wtnhxymk";
+		const string Input = "wtnhxymk";
+		/// <summary>
+		/// The eight-character password for the door is generated one character at a time by finding the MD5 hash of some Door ID 
+		/// (your puzzle Input) and an increasing integer index (starting with 0).
+		/// A hash indicates the next character in the password if its hexadecimal representation starts with five zeroes.
+		/// If it does, the sixth character in the hash is the next character of the password.
+		/// </summary>
+		/// <param name="args"></param>
 		static void Main(string[] args)
 		{
 
@@ -32,7 +39,7 @@ namespace day5
 							
 							Console.WriteLine(index);
 						}
-						byte[] data = md5Hash.ComputeHash(Encoding.UTF8.GetBytes(input + index++));
+						byte[] data = md5Hash.ComputeHash(Encoding.UTF8.GetBytes(Input + index++));
 						var x = BitConverter.ToInt32(data, 0);
 						//first two check as is, last one check only high nibble
 						if ((data[0] == 0) && (data[1] ==0)  && (data[2] >> 4 == 0))
