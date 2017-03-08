@@ -1,0 +1,112 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using day11;
+using Xunit;
+
+namespace UnitTests
+{
+	public class StateTests
+	{
+		private State testState;
+		private State emptyTestState;
+		private const int F1 = 0;
+		private const int F2 = 1;
+
+		public StateTests()
+		{
+			//F2	.	.	HM	LG	LM
+			//F1	E	HG	.	.	.
+			int floorCount = 2;
+			int itemCount = 4 + 1;
+			testState = new State(floorCount, itemCount);
+			testState.AddItem(ItemTypes.Elevator, F1, null);
+			testState.AddItem(ItemTypes.Generator, F1, 'H');
+			testState.AddItem(ItemTypes.Microchip, F2, 'H');
+			testState.AddItem(ItemTypes.Generator, F2, 'L');
+			testState.AddItem(ItemTypes.Microchip, F2, 'L');
+
+			emptyTestState = new State(1, 1);
+
+		}
+
+
+		[Fact]
+		public void FloorItemsTests()
+		{
+			var firstFloorItems =  testState.FloorItems(F1);
+			Assert.Equal(1 , firstFloorItems.Count);
+			Assert.Contains("HG", firstFloorItems);
+			
+			var secondFloorItems = testState.FloorItems(F2);
+			Assert.Equal(3, secondFloorItems.Count);
+			Assert.Contains("HM", secondFloorItems);
+			Assert.Contains("LG", secondFloorItems);
+			Assert.Contains("LM", secondFloorItems);
+			Assert.DoesNotContain("HG", secondFloorItems);
+		}
+
+		[Fact]
+		public void ElevatorFloorTests()
+		{
+			Assert.Equal(F1, testState.ElevatorFloor());
+			var noElevatorState = new State(1, 1);
+			Assert.Equal(-1, noElevatorState.ElevatorFloor());
+			testState = null;
+		}
+
+		[Fact]
+		public void PairedItemTests()
+		{
+			Assert.Equal($"H{ItemTypes.Generator}", State.PairedItemName($"H{(char)ItemTypes.Microchip}"));
+			Assert.Equal($"X{ItemTypes.Microchip}", State.PairedItemName($"X{(char)ItemTypes.Generator}"));
+		}
+
+		[Fact]
+		public void ItemTypeTests()
+		{
+			Assert.Equal(ItemTypes.Generator, State.ItemType($"H{(char)ItemTypes.Generator}"));
+			Assert.Equal(ItemTypes.Microchip, State.ItemType($"X{(char)ItemTypes.Microchip}"));
+			Assert.Equal(ItemTypes.Elevator, State.ItemType($"{(char)ItemTypes.Elevator}"));
+		}
+
+		[Fact]
+		public void IsFloorSafeTests()
+		{
+			Assert.True(testState.IsFloorSafe(F1));
+			Assert.False(testState.IsFloorSafe(F2));
+			Assert.True(emptyTestState.IsFloorSafe(F1));
+		}
+
+		[Fact]
+		public void IsSafeTests()
+		{
+			Assert.False(testState.IsSafe());
+			Assert.True(emptyTestState.IsSafe());
+		}
+
+
+		[Fact]
+		public void MoveItemsTests()
+		{
+			var firstFloorItems = testState.FloorItems(F1);
+			Assert.Equal(1, firstFloorItems.Count);
+			Assert.Contains("HG", firstFloorItems);
+			var secondFloorItems = testState.FloorItems(F2);
+			Assert.Equal(3, secondFloorItems.Count);
+			Assert.DoesNotContain("HG", secondFloorItems);
+
+			testState.MoveItems(new List<string> {"HG"}, F2);
+			
+			firstFloorItems = testState.FloorItems(F1);
+			Assert.Equal(0, firstFloorItems.Count);
+			Assert.DoesNotContain("HG", firstFloorItems);
+			secondFloorItems = testState.FloorItems(F2);
+			Assert.Equal(4, secondFloorItems.Count);
+			Assert.Contains("HG", secondFloorItems);
+
+		}
+	}
+}
