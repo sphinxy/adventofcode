@@ -19,10 +19,10 @@ namespace day11
 	//corresponding RTG when they're in the same room, and away from other RTGs otherwise.
 	public class Program
 	{
-		public const int F1 = 0;
-		public const int F2 = 1;
-		public const int F3 = 2;
-		public const int F4 = 3;
+		public const sbyte F1 = 0;
+		public const sbyte F2 = 1;
+		public const sbyte F3 = 2;
+		public const sbyte F4 = 3;
 
 		static void Main(string[] args)
 		{
@@ -47,15 +47,15 @@ namespace day11
 
 
 			//simple breadth-first search tree search
-			int level = 1;
-			int maxlevel = 100;
+			sbyte level = 1;
+			sbyte maxlevel = 100;
 			var levelNodes = MoveElevatorAllPossibleWays(state, root, hashes);
 
-			while (levelNodes != null && !levelNodes.Any(n => n.data.isSolved()) && level < maxlevel)
+			while (levelNodes != null && !levelNodes.Any(n => n.data.IsSolved()) && level < maxlevel)
 			{
 				Console.WriteLine($"Checking level {level} with {levelNodes.Count} nodes");
 				var newLevelNodes = new List<NTree<State>>();
-				foreach (var child in levelNodes.Where(child => child.data.IsSafe() && !child.data.isSolved()).ToList())
+				foreach (var child in levelNodes.Where(child => child.data.IsSafe()).ToList())
 				{
 					var newNodes = MoveElevatorAllPossibleWays(child.data, child, hashes);
 					newLevelNodes.AddRange(newNodes);
@@ -84,10 +84,10 @@ namespace day11
 			}
 		}
 
-		static NTree<State> PrintDoneNodes(NTree<State> node, int level)
+		static NTree<State> PrintDoneNodes(NTree<State> node, sbyte level)
 		{
 			
-			if (node.data.isSolved())
+			if (node.data.IsSolved())
 			{
 				return node;
 
@@ -95,7 +95,8 @@ namespace day11
 			NTree<State> result;
 			foreach (var child in node.children)
 			{
-				result = PrintDoneNodes(child, level+1);
+				level = (sbyte) (level + 1);
+				result = PrintDoneNodes(child, level);
 				if (result != null)
 				{
 					return result;
@@ -123,9 +124,10 @@ namespace day11
 				foreach (var item in allPossibleItems)
 				{
 					var newState = state.MoveItems(item, nearbyFloor);
-					if (!hashes.Contains(newState.ToString()))
+					var newStateHash = newState.ToString();
+					if (!hashes.Contains(newStateHash))
 					{
-						hashes.Add(newState.ToString());
+						hashes.Add(newStateHash);
 						treeNode.AddChild(newState);
 					}
 				}
@@ -144,8 +146,8 @@ namespace day11
 		//F1	E	.	HM	.	LM
 		public static State FillTestState()
 		{
-			int floorCount = 4;
-			int itemCount = 4 + 1;
+			sbyte floorCount = 4;
+			sbyte itemCount = 4 + 1;
 			var state = new State(floorCount, itemCount);
 			state.AddItem(ItemTypes.Elevator, F1, null);
 			state.AddItem(ItemTypes.Generator, F2, 'H');
@@ -161,8 +163,8 @@ namespace day11
 		//The fourth floor contains nothing relevant.
 		public static State FillRealStateOne()
 		{
-			int floorCount = 4;
-			int itemCount = 10 + 1;
+			sbyte floorCount = 4;
+			sbyte itemCount = 10 + 1;
 			var state = new State(floorCount, itemCount);
 			state.AddItem(ItemTypes.Elevator, F1, null);
 			state.AddItem(ItemTypes.Generator, F1, 'M');
@@ -187,8 +189,8 @@ namespace day11
 		//A dilithium-compatible microchip.
 		public static State FillRealStateTwo()
 		{
-			int floorCount = 4;
-			int itemCount = 14 + 1;
+			sbyte floorCount = 4;
+			sbyte itemCount = 14 + 1;
 			var state = new State(floorCount, itemCount);
 			state.AddItem(ItemTypes.Elevator, F1, null);
 			state.AddItem(ItemTypes.Generator, F1, 'M');

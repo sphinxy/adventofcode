@@ -13,17 +13,17 @@ namespace UnitTests
 		private State testState;
 		private State testStateStep2;
 		private State emptyTestState;
-		private const int F1 = 0;
-		private const int F2 = 1;
-		private const int F3 = 2;
+		private const sbyte F1 = 0;
+		private const sbyte F2 = 1;
+		private const sbyte F3 = 2;
 
 		public StateTests()
 		{
 			//F3	.	.				XM	YG
 			//F2	.	.	HM	LG	LM	.	.
 			//F1	E	HG	.	.	.	.	.
-			int floorCount = 3;
-			int itemCount = 6 + 1;
+			sbyte floorCount = 3;
+			sbyte itemCount = 6 + 1;
 			
 			testState = new State(floorCount, itemCount);
 			testState.AddItem(ItemTypes.Elevator, F1, null);
@@ -110,8 +110,8 @@ namespace UnitTests
 		[Fact]
 		public void IsDoneTests()
 		{
-			Assert.False(testState.isSolved());
-			Assert.False(emptyTestState.isSolved());
+			Assert.False(testState.IsSolved());
+			Assert.False(emptyTestState.IsSolved());
 		}
 
 
