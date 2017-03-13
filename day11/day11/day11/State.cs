@@ -59,23 +59,55 @@ namespace day11
 
 			return result.ToString();
 		}
-
-		public  string ToMiniString()
+		//Get short hash in assumption that element name is not playing any role
+		// 1(1,3)(2,2) means that elevator on F1, first isotope generator on F1 and related microchip on F3, second isotop generator and microchip on F2
+		public string ToHashString()
 		{
 			var result = new StringBuilder();
+			//get list of isotopes
+			var isotopes = DataMap.Values.Select(s => s[0]).Distinct();
+			
+			//prepare pairs for each isotope
+			var pairs = new Dictionary<char, sbyte[]>();
+			foreach (var isotop in isotopes)
+			{
+				pairs.Add(isotop, new sbyte[] { Empty, Empty });
+			}
+	
+			
 			result.Append(ElevatorFloor);
+
+			//fill pairs using data
 			for (sbyte f = 0;  f < FloorCount; f++)
 			{
-				result.Append(f);
+				sbyte realFloor = (sbyte) (f + 1);
 				for (sbyte i = 0; i < ItemCount; i++)
 				{
-					if (Data[f, i] != Empty)
+					var currentItem = Data[f, i];
+					if (currentItem != Empty)
 					{
-						result.Append(Data[f, i]);
+						var namedItem = DataMap[currentItem];
+						
+						switch (ItemType(namedItem))
+						{
+							case ItemTypes.Generator:
+								pairs[ItemElement(namedItem)][0] = realFloor;
+								break;
+							case ItemTypes.Microchip:
+								pairs[ItemElement(namedItem)][1] = realFloor;
+								break;
+							
+						}
+						
 					}
 				}
 			}
-
+			//sort by floor, not by isotope
+			var sortedPairs = pairs.Values.OrderBy(p => p[0]).ThenBy(p=>p[1]);
+			foreach (var pair in sortedPairs)
+			{
+				result.Append($"({pair[0]},{pair[1]})");
+			}
 			return result.ToString();
 		}
 
@@ -272,8 +304,6 @@ namespace day11
 					return ItemTypes.Generator;
 					case (char)ItemTypes.Microchip:
 						return ItemTypes.Microchip;
-					case (char)ItemTypes.Elevator:
-						return ItemTypes.Elevator;
 					default:
 						throw new ArgumentOutOfRangeException(nameof(item));
 				}

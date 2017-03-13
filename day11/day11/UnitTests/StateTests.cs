@@ -11,6 +11,7 @@ namespace UnitTests
 	public class StateTests
 	{
 		private State testState;
+		private State testStateSwapElements;
 		private State testStateStep2;
 		private State emptyTestState;
 		private const sbyte F1 = 0;
@@ -34,8 +35,17 @@ namespace UnitTests
 			testState.AddItem(ItemTypes.Microchip, F3, 'X');
 			testState.AddItem(ItemTypes.Generator, F3, 'Y');
 
+			testStateSwapElements = new State(floorCount, itemCount);
+			testStateSwapElements.AddItem(ItemTypes.Elevator, F1, null);
+			testStateSwapElements.AddItem(ItemTypes.Generator, F1, 'L');
+			testStateSwapElements.AddItem(ItemTypes.Microchip, F2, 'L');
+			testStateSwapElements.AddItem(ItemTypes.Generator, F2, 'H');
+			testStateSwapElements.AddItem(ItemTypes.Microchip, F2, 'H');
+			testStateSwapElements.AddItem(ItemTypes.Microchip, F3, 'X');
+			testStateSwapElements.AddItem(ItemTypes.Generator, F3, 'Y');
 
-			
+
+
 			testStateStep2 = new State(floorCount, 3);
 			testStateStep2.AddItem(ItemTypes.Elevator, F2, null);
 			testStateStep2.AddItem(ItemTypes.Generator, F2, 'H');
@@ -95,7 +105,6 @@ namespace UnitTests
 		{
 			Assert.Equal(ItemTypes.Generator, State.ItemType($"H{(char)ItemTypes.Generator}"));
 			Assert.Equal(ItemTypes.Microchip, State.ItemType($"X{(char)ItemTypes.Microchip}"));
-			Assert.Equal(ItemTypes.Elevator, State.ItemType($"{(char)ItemTypes.Elevator}"));
 		}
 
 		[Fact]
@@ -123,7 +132,7 @@ namespace UnitTests
 		public void IsDoneTests()
 		{
 			Assert.False(testState.IsSolved());
-			Assert.True(emptyTestState.IsSolved());
+			Assert.False(emptyTestState.IsSolved());
 		}
 
 
@@ -147,6 +156,15 @@ namespace UnitTests
 			Assert.Equal(4, secondFloorItems.Count);
 			Assert.Contains("HG", secondFloorItems);
 			Assert.Equal(F2, newState.ElevatorFloor);
+		}
+
+		[Fact]
+		public void ToHashStringTests()
+		{
+			var testStateHash = testState.ToHashString();
+			var testStateSwapElementsHash = testStateSwapElements.ToHashString();
+			Assert.Equal(testStateHash, testStateSwapElementsHash);
+			Assert.Equal("0(-1,3)(1,2)(2,2)(3,-1)", testStateHash);
 
 		}
 	}

@@ -29,12 +29,12 @@ namespace day11
 		{
 
 			State initialState;
-			initialState = FillTestState();
-			Solve(initialState);
-			initialState = FillRealStateOne();
-			Solve(initialState);
-			//initialState = FillRealStateTwo();
+			//initialState = FillTestState();
 			//Solve(initialState);
+			//initialState = FillRealStateOne();
+			//Solve(initialState);
+			initialState = FillRealStateTwo();
+			Solve(initialState);
 
 			Console.ReadLine();
 		}
@@ -48,10 +48,10 @@ namespace day11
 
 
 			//simple breadth-first search tree search
-			sbyte level = 1;
-			sbyte maxlevel = 100;
+			int level = 1;
+			int maxlevel = 5000;
 			var levelNodes = MoveElevatorAllCorrectWays(state, root, hashes);
-			while (levelNodes != null && level < maxlevel)
+			while (levelNodes.Any() && level < maxlevel)
 			{
 				Console.WriteLine($"Checking level {level} with {levelNodes.Count} nodes");
 				if (levelNodes.Any(n => n.data.IsSolved()))
@@ -63,7 +63,6 @@ namespace day11
 				foreach (var child in levelNodes)
 				{
 					var newNodes = MoveElevatorAllCorrectWays(child.data, child, hashes);
-					//newLevelNodes.AddRange(newNodes);
 					newLevelNodes = new LinkedList<NTree<State>>(newLevelNodes.Concat(newNodes));
 				}
 				Console.WriteLine("Move done");
@@ -131,7 +130,7 @@ namespace day11
 				{
 					var newState = state.MoveItems(item, nearbyFloor);
 					
-					var newStateHash = newState.ToMiniString();
+					var newStateHash = newState.ToHashString();
 					if (!hashes.Contains(newStateHash))
 					{
 						hashes.Add(newStateHash);
@@ -217,7 +216,7 @@ namespace day11
 		public static State FillRealStateTwo()
 		{
 			sbyte floorCount = 4;
-			sbyte itemCount = 14 + 1;
+			sbyte itemCount = 14;
 			var state = new State(floorCount, itemCount);
 			state.AddItem(ItemTypes.Elevator, F1, null);
 			state.AddItem(ItemTypes.Generator, F1, 'M');
