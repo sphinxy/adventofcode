@@ -130,6 +130,7 @@ namespace day11
 				foreach (var item in allPossibleItems)
 				{
 					var newState = state.MoveItems(item, nearbyFloor);
+					
 					var newStateHash = newState.ToMiniString();
 					if (!hashes.Contains(newStateHash))
 					{

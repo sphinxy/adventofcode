@@ -69,7 +69,10 @@ namespace day11
 				result.Append(f);
 				for (sbyte i = 0; i < ItemCount; i++)
 				{
-					result.Append(Data[f, i]);
+					if (Data[f, i] != Empty)
+					{
+						result.Append(Data[f, i]);
+					}
 				}
 			}
 
