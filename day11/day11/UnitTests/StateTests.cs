@@ -23,7 +23,7 @@ namespace UnitTests
 			//F2	.	.	HM	LG	LM	.	.
 			//F1	E	HG	.	.	.	.	.
 			sbyte floorCount = 3;
-			sbyte itemCount = 6 + 1;
+			sbyte itemCount = 6;
 			
 			testState = new State(floorCount, itemCount);
 			testState.AddItem(ItemTypes.Elevator, F1, null);
@@ -34,10 +34,10 @@ namespace UnitTests
 			testState.AddItem(ItemTypes.Microchip, F3, 'X');
 			testState.AddItem(ItemTypes.Generator, F3, 'Y');
 
-			testStateStep2 = new State(4, itemCount);
-			testStateStep2.AddItem(ItemTypes.Elevator, F1, null);
-			testStateStep2 = new State(floorCount, itemCount);
 
+			
+			testStateStep2 = new State(floorCount, 3);
+			testStateStep2.AddItem(ItemTypes.Elevator, F2, null);
 			testStateStep2.AddItem(ItemTypes.Generator, F2, 'H');
 			testStateStep2.AddItem(ItemTypes.Microchip, F2, 'H');
 			testStateStep2.AddItem(ItemTypes.Microchip, F1, 'L');
@@ -65,10 +65,22 @@ namespace UnitTests
 		[Fact]
 		public void ElevatorFloorTests()
 		{
-			Assert.Equal(F1, testState.ElevatorFloor());
+			Assert.Equal(F1, testState.ElevatorFloor);
 			var noElevatorState = new State(1, 1);
-			Assert.Equal(-1, noElevatorState.ElevatorFloor());
+			Assert.Equal(F1, noElevatorState.ElevatorFloor);
 			testState = null;
+		}
+
+		[Fact]
+		public void ElevatorNearByTests()
+		{
+			var testStateNearby = testState.ElevatorNearbyFloors();
+			Assert.Contains(F2, testStateNearby);
+			Assert.Equal(1, testStateNearby.Count());
+			var testStateStep2NearbyFloors = testStateStep2.ElevatorNearbyFloors();
+			Assert.Contains(F1, testStateStep2NearbyFloors);
+			Assert.Contains(F3, testStateStep2NearbyFloors);
+			Assert.Equal(2, testStateStep2NearbyFloors.Count());
 		}
 
 		[Fact]
@@ -111,7 +123,7 @@ namespace UnitTests
 		public void IsDoneTests()
 		{
 			Assert.False(testState.IsSolved());
-			Assert.False(emptyTestState.IsSolved());
+			Assert.True(emptyTestState.IsSolved());
 		}
 
 
@@ -124,7 +136,7 @@ namespace UnitTests
 			var secondFloorItems = testState.FloorItems(F2);
 			Assert.Equal(3, secondFloorItems.Count);
 			Assert.DoesNotContain("HG", secondFloorItems);
-			Assert.Equal(F1, testState.ElevatorFloor());
+			Assert.Equal(F1, testState.ElevatorFloor);
 
 			var newState = testState.MoveItems(new List<string> {"HG"}, F2);
 			
@@ -134,7 +146,7 @@ namespace UnitTests
 			secondFloorItems = newState.FloorItems(F2);
 			Assert.Equal(4, secondFloorItems.Count);
 			Assert.Contains("HG", secondFloorItems);
-			Assert.Equal(F2, newState.ElevatorFloor());
+			Assert.Equal(F2, newState.ElevatorFloor);
 
 		}
 	}

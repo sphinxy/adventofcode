@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.ComponentModel.Design.Serialization;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -28,8 +29,8 @@ namespace day11
 		{
 
 			State initialState;
-			//initialState = FillTestState();
-			//Solve(initialState);
+			initialState = FillTestState();
+			Solve(initialState);
 			initialState = FillRealStateOne();
 			Solve(initialState);
 			//initialState = FillRealStateTwo();
@@ -49,22 +50,27 @@ namespace day11
 			//simple breadth-first search tree search
 			sbyte level = 1;
 			sbyte maxlevel = 100;
-			var levelNodes = MoveElevatorAllPossibleWays(state, root, hashes);
-
-			while (levelNodes != null && !levelNodes.Any(n => n.data.IsSolved()) && level < maxlevel)
+			var levelNodes = MoveElevatorAllCorrectWays(state, root, hashes);
+			while (levelNodes != null && level < maxlevel)
 			{
 				Console.WriteLine($"Checking level {level} with {levelNodes.Count} nodes");
-				var newLevelNodes = new List<NTree<State>>();
-				foreach (var child in levelNodes.Where(child => child.data.IsSafe()).ToList())
+				if (levelNodes.Any(n => n.data.IsSolved()))
 				{
-					var newNodes = MoveElevatorAllPossibleWays(child.data, child, hashes);
-					newLevelNodes.AddRange(newNodes);
+					break;
 				}
+				var newLevelNodes = new LinkedList<NTree<State>>();
+
+				foreach (var child in levelNodes)
+				{
+					var newNodes = MoveElevatorAllCorrectWays(child.data, child, hashes);
+					//newLevelNodes.AddRange(newNodes);
+					newLevelNodes = new LinkedList<NTree<State>>(newLevelNodes.Concat(newNodes));
+				}
+				Console.WriteLine("Move done");
 				level++;
 				levelNodes = newLevelNodes;
 			}
-
-
+			
 			Console.WriteLine("Solving complete, here is results:");
 			var solutionNode = PrintDoneNodes(root, 1);
 			PrintSolutionPath(solutionNode);
@@ -106,14 +112,14 @@ namespace day11
 		}
 
 
-		private static List<NTree<State>> MoveElevatorAllPossibleWays(State state, NTree<State> treeNode, HashSet<string> hashes)
+		private static LinkedList<NTree<State>> MoveElevatorAllCorrectWays(State state, NTree<State> treeNode, HashSet<string> hashes)
 		{
-			var itemsOnFloorWithElevator = state.FloorItems(state.ElevatorFloor());
+			var itemsOnFloorWithElevator = state.FloorItems(state.ElevatorFloor);
 
 			//all unique possible pairs of items from state, in assumption that  HG LM eq LM HG
 			var combinations = (from item1 in itemsOnFloorWithElevator
 				from item2 in itemsOnFloorWithElevator
-				where String.CompareOrdinal(item1, item2) < 0
+				where string.CompareOrdinal(item1, item2) < 0
 				select Tuple.Create(item1, item2)).ToList();
 		
 			foreach (var nearbyFloor in state.ElevatorNearbyFloors())
@@ -124,20 +130,40 @@ namespace day11
 				foreach (var item in allPossibleItems)
 				{
 					var newState = state.MoveItems(item, nearbyFloor);
-					var newStateHash = newState.ToString();
+					var newStateHash = newState.ToMiniString();
 					if (!hashes.Contains(newStateHash))
 					{
 						hashes.Add(newStateHash);
-						treeNode.AddChild(newState);
+						if (newState.IsSafe())
+						{
+							treeNode.AddChild(newState);
+						}
 					}
 				}
 			}
 
-			return treeNode.children.ToList();
+			return treeNode.children;
 
 
 		}
-	
+
+		public static System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create();
+
+		public static string CreateMD5(string input)
+		{
+			
+			byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(input);
+			byte[] hashBytes = md5.ComputeHash(inputBytes);
+
+			// Convert the byte array to hexadecimal string
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < hashBytes.Length; i++)
+			{
+				sb.Append(hashBytes[i].ToString("X2"));
+			}
+			return sb.ToString();
+		}
+
 		//As a diagram (F# for a Floor number, E for Elevator, H for Hydrogen, L for Lithium, 
 		//M for Microchip, and G for Generator), the initial state looks like this:
 		//F4	.	.	.	.	.
@@ -147,7 +173,7 @@ namespace day11
 		public static State FillTestState()
 		{
 			sbyte floorCount = 4;
-			sbyte itemCount = 4 + 1;
+			sbyte itemCount = 4;
 			var state = new State(floorCount, itemCount);
 			state.AddItem(ItemTypes.Elevator, F1, null);
 			state.AddItem(ItemTypes.Generator, F2, 'H');
@@ -164,7 +190,7 @@ namespace day11
 		public static State FillRealStateOne()
 		{
 			sbyte floorCount = 4;
-			sbyte itemCount = 10 + 1;
+			sbyte itemCount = 10;
 			var state = new State(floorCount, itemCount);
 			state.AddItem(ItemTypes.Elevator, F1, null);
 			state.AddItem(ItemTypes.Generator, F1, 'M');

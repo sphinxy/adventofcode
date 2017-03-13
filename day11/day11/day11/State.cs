@@ -4,50 +4,81 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace day11
 {
 	public class State
 	{
-		public const sbyte ElevatorIndex = 0;
-		public const sbyte ElevatorCode = 100;
-		public sbyte ItemIndex = 1;
+		public sbyte ElevatorFloor = 0;
+		public sbyte ItemIndex = 0;
+		public const sbyte Empty = -1;
 		public State(sbyte floorCount, sbyte itemCount)
 		{
 			FloorCount = floorCount;
 			ItemCount = itemCount;
 			Data = new sbyte[floorCount, itemCount];
+			
+			for (int f = 0; f < floorCount; f++)
+			{
+				for (int i = 0; i < itemCount; i++)
+				{
+					Data[f,i] = Empty;
+				}
+			}
+			
 			DataMap = new Dictionary<sbyte, string>();
 		}
 
-		public State(State state)
+		public State(State oldState)
 		{
-			FloorCount = state.FloorCount;
-			ItemCount = state.ItemCount;
+			FloorCount = oldState.FloorCount;
+			ItemCount = oldState.ItemCount;
 			Data = new sbyte[FloorCount, ItemCount];
-			Array.Copy(state.Data, Data, state.Data.Length);
-			ItemIndex = state.ItemIndex;
-			DataMap = state.DataMap;
+			Array.Copy(oldState.Data, Data, oldState.Data.Length);
+			ItemIndex = oldState.ItemIndex;
+			DataMap = oldState.DataMap;
+			ElevatorFloor = oldState.ElevatorFloor;
 		}
 
 		public override string ToString()
 		{
-			var result = "";
+			var result = new StringBuilder();
 			sbyte maxFloor = (sbyte) (FloorCount - 1);
 			for (sbyte f = maxFloor; f >= 0; f--)
 			{
-				result += "F" + (f+1) + " ";
+				result.Append("F" + (f+1) + " ");
+				result.Append(f == ElevatorFloor ? "E  " : "   ");
+				
 				for (sbyte i = 0; i < ItemCount; i++)
 				{
-					result += Data[f, i] == 0 ? ".  " : Data[f, i]+ new string(' ', (3 - DataMap[Data[f, i]].Length));
+					result.Append(Data[f, i] == Empty ? ".  " : DataMap[Data[f, i]]+ new string(' ', (3 - DataMap[Data[f, i]].Length)));
 				}
-				result += "\n\r";
+				result.Append("\n\r");
 			}
 
-			return result;
+			return result.ToString();
 		}
 
-		private sbyte[,] Data { get; }
+		public  string ToMiniString()
+		{
+			var result = new StringBuilder();
+			result.Append(ElevatorFloor);
+			for (sbyte f = 0;  f < FloorCount; f++)
+			{
+				result.Append(f);
+				for (sbyte i = 0; i < ItemCount; i++)
+				{
+					result.Append(Data[f, i]);
+				}
+			}
+
+			return result.ToString();
+		}
+
+
+
+		public sbyte[,] Data { get; }
 		private Dictionary<sbyte, string> DataMap { get; }
 		public sbyte FloorCount { get; }
 		public sbyte ItemCount { get; }
@@ -62,8 +93,7 @@ namespace day11
 			}
 			if (itemType == ItemTypes.Elevator)
 			{
-				DataMap.Add(ElevatorCode, $"{(char) ItemTypes.Elevator}");
-				Data[floor, ElevatorIndex] = ElevatorCode;
+				ElevatorFloor = floor;
 				return;
 			}
 
@@ -81,14 +111,14 @@ namespace day11
 			ValidateFloorsNearby(fromFloor, toFloor);
 			for (sbyte i = 0; i < ItemIndex; i++)
 			{
-				if (Data[fromFloor, i] != 0 && DataMap[Data[fromFloor,i]] == item)
+				if (Data[fromFloor, i] != Empty && DataMap[Data[fromFloor,i]] == item)
 				{
-					if (Data[toFloor,i] != 0)
+					if (Data[toFloor,i] != Empty)
 					{
 						throw new IndexOutOfRangeException("Something wrong, item place is busy");
 					}
 					Data[toFloor, i] = Data[fromFloor, i];
-					Data[fromFloor, i] = 0;
+					Data[fromFloor, i] = Empty;
 				}
 			}
 			
@@ -113,9 +143,9 @@ namespace day11
 			ValidateFloor(floor);
 
 			var result = new List<string>();
-			for (sbyte j = 1; j < ItemCount; j++)
+			for (sbyte j = 0; j < ItemCount; j++)
 			{
-				if (Data[floor, j] != 0)
+				if (Data[floor, j] != Empty)
 				{
 					result.Add(DataMap[Data[floor, j]]);
 				}
@@ -132,35 +162,24 @@ namespace day11
 			}
 		}
 
-		/// <summary>
-		/// Gives floor number where elevalor stays, -1 if no found
-		/// </summary>
-		/// <returns></returns>
-		public sbyte ElevatorFloor()
-		{
-			for (sbyte f = 0; f < FloorCount; f++)
-			{
-				if (Data[f, ElevatorIndex] == ElevatorCode)
-				{
-					return f;
-				}
-			}
-			return -1;
-		}
 
-		//+1 -1 floors aroud elevator
+		//+1 -1 floors around elevator
 		public List<sbyte> ElevatorNearbyFloors()
 		{
 			var nearbyFloors = new List<sbyte>();
 			
-			var currentElevatorFloor = ElevatorFloor();
-			for (sbyte f = 0; f < FloorCount; f++)
+
+			sbyte belowFloor = (sbyte) (ElevatorFloor - 1);
+			if (belowFloor >= 0) 
 			{
-				if (Math.Abs(currentElevatorFloor - f) == 1)
-				{
-					nearbyFloors.Add(f);
-				}
+				nearbyFloors.Add(belowFloor);
 			}
+			sbyte aboveFloor = (sbyte)(ElevatorFloor + 1);
+			if (aboveFloor < FloorCount)
+			{
+				nearbyFloors.Add(aboveFloor);
+			}
+
 			return nearbyFloors;
 		}
 
@@ -188,7 +207,7 @@ namespace day11
 			bool result = true;
 			
 			//elevator on last floor
-			if (ElevatorFloor() != FloorCount-1)
+			if (ElevatorFloor != FloorCount-1)
 				result = false;
 			
 
@@ -198,7 +217,7 @@ namespace day11
 				result = result && FloorItems(f).Count == 0;
 			}
 			//all items are on last floot
-			result = result && FloorItems((sbyte) (FloorCount-1)).Count == ItemCount-1;
+			result = result && FloorItems((sbyte) (FloorCount-1)).Count == ItemCount;
 			
 
 			return result;
@@ -298,7 +317,7 @@ namespace day11
 		public State MoveItems(List<string> moveItems, sbyte toFloor)
 		{
 			ValidateFloor(toFloor);
-			var fromFloor = ElevatorFloor();
+			var fromFloor = ElevatorFloor;
 			ValidateFloorsNearby(fromFloor, toFloor);
 			if (moveItems.Count > 2)
 			{
@@ -318,7 +337,7 @@ namespace day11
 			}
 
 			//Move elevator too!
-			newState.MoveItem(fromFloor, toFloor, ((char)ItemTypes.Elevator).ToString());
+			newState.ElevatorFloor = toFloor;
 			return newState;
 		}
 	}
