@@ -52,7 +52,7 @@ namespace day13
 			curNode.PathLength = pathLength;
 			List<LabirintNode> nextNodes = new List<LabirintNode>();
 			nextNodes.Add(curNode);
-			while (nextNodes.Any())
+			while (nextNodes.Any() && pathLength<=50)
 			{
 //				PrintLabirint();
 				var currentLevelNodes = nextNodes.ToList();
@@ -61,17 +61,17 @@ namespace day13
 				{
 					node.Visited = true;
 					node.PathLength = pathLength;
-					if (node.Row == destRow && node.Col == destCol)
-					{
-						return pathLength; 
-					}
+					//if (node.Row == destRow && node.Col == destCol)
+					//{
+					//	return pathLength; 
+					//}
 					nextNodes.AddRange(NodesAround(node.Row, node.Col).Where(n => n.Visited == false && IsNodeOpen(n.Row, n.Col)).ToList());
 				}
 				pathLength++;
 
 			}
 
-			return 0;
+			return CountVisitedNodes();
 		}
 
 		public bool IsNodeOpen(int row, int col)
@@ -101,6 +101,24 @@ namespace day13
 				}
 				Console.WriteLine();
 			}
+		}
+
+		public int CountVisitedNodes()
+		{
+			var result = 0;
+			Console.WriteLine();
+			for (int r = 0; r < size; r++)
+			{
+				for (int c = 0; c < size; c++)
+				{
+
+					if (labirintNodes[r, c].Visited)
+					{
+						result++;
+					}
+				}
+			}
+			return result;
 		}
 
 		public List<LabirintNode> NodesAround(int row, int col)
