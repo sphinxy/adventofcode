@@ -15,8 +15,9 @@ namespace day12
 		{
 			try
 			{
-				CodeSolver("testData.txt");
-				CodeSolver("inputData.txt");
+				CodeSolver("testData.txt", 0);
+				CodeSolver("inputData.txt", 0);
+				CodeSolver("inputData.txt", 1);
 			}
 			catch (Exception ex)
 			{
@@ -26,13 +27,13 @@ namespace day12
 			Console.ReadLine();
 		}
 
-		public static void CodeSolver(string inputFile)
+		public static void CodeSolver(string inputFile, int initialCValue)
 		{
 			Dictionary<char, int> registers = new Dictionary<char, int>
 			{
 				{'a', 0}, 
 				{'b', 0}, 
-				{'c', 0}, 
+				{'c', initialCValue}, 
 				{'d', 0}
 			};
 			var lines = File.ReadLines(inputFile).ToArray();
@@ -42,8 +43,7 @@ namespace day12
 			while (l < lines.Length)
 			{
 				var line = lines[l];
-				Console.WriteLine(line);
-				PrintRegisters(registers);
+				PrintRegisters(registers, line);
 				var commandLine = line.Split(' ');
 				var command = commandLine[0];
 				var firstParam = commandLine[1];
@@ -82,11 +82,9 @@ namespace day12
 					case "jnz":
 					{
 							var secondParam = commandLine[2];
-							if (
-									(registers.ContainsKey(firstParam[0]) && registers[firstParam[0]] > 0)
-									||
-									(!registers.ContainsKey(firstParam[0]) && firstParam[0] > 0)
-								)
+							var IsRegisterAndAboveZero = registers.ContainsKey(firstParam[0]) && registers[firstParam[0]] > 0;
+							var IsIntAndAboveZero = !registers.ContainsKey(firstParam[0]) && firstParam[0] > 0;
+							if (IsRegisterAndAboveZero || IsIntAndAboveZero)
 							{
 								l += Convert.ToInt32(secondParam);
 							}
@@ -108,14 +106,15 @@ namespace day12
 			Console.WriteLine($"Register 'a' value is {registers['a']}");
 		}
 
-		private static void PrintRegisters(Dictionary<char, int> registers)
+		private static void PrintRegisters(Dictionary<char, int> registers, string line = null)
 		{
-			Console.Write("   {");
-			foreach (var key in registers.Keys)
-			{
-				Console.Write($"{key}:{registers[key]} ");
-			}
-			Console.WriteLine("}");
+			//Console.WriteLine(line);
+			//Console.Write("   {");
+			//foreach (var key in registers.Keys)
+			//{
+			//	Console.Write($"{key}:{registers[key]} ");
+			//}
+			//Console.WriteLine("}");
 		}
 	}
 }
